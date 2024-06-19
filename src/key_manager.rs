@@ -38,11 +38,9 @@ pub struct KeyManager {
 impl KeyManager {
     pub fn new() -> Result<KeyManager> {
         let (rsa_private_key, signing_key, verifying_key): (RsaPrivateKey, SigningKey<Sha512_256>, VerifyingKey<Sha512_256>) = if Self::get_path()?.exists() {
-            println!("LOADED");
             Self::load_keys()?
         }
         else {
-            println!("GENERATED");
             Self::generate_keys()?
         };
         
@@ -52,7 +50,9 @@ impl KeyManager {
             verifying_key,
         };
         
-        result.save_keys()?;
+        if !Self::get_path()?.exists() {
+            result.save_keys()?;
+        }
         
         Ok(result)
     }

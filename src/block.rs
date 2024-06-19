@@ -1,8 +1,10 @@
 use std::cmp::Ordering::Equal;
+
 use rsa::sha2::{Sha512_256, Digest};
 use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize};
 use anyhow::Result;
+use rand::random;
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -86,7 +88,7 @@ impl Block {
             Some(proof_of_work) => self.check_proof_of_work(proof_of_work)?,
             None => true,
         };
-        
+
         if !proof_of_work_validation {
             return Ok(false);
         }
@@ -97,14 +99,21 @@ impl Block {
         };
     }
 
-    pub fn verify(&self) -> Result<u128> {
-        let mut result: u128 = 0;
+    pub fn verify<T: ToString>(&mut self, miner: T) -> Result<()> {
+        // TODO: Rewrite the selection to a graphics accelerator
+        
+        let mut result: u128 = random::<u128>();
 
+        self.miner = miner.to_string();
+    
         while !self.check_proof_of_work(result)? {
-            result += 1;
+            result = random::<u128>();
         }
-
-        Ok(result)
+    
+        self.proof_of_work = Some(result);
+        self.created_time = Some(Utc::now());
+    
+        Ok(())
     }
 
     pub fn get_hex_hash(&self, proof_of_work: u128) -> Result<String> {
