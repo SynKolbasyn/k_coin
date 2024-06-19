@@ -13,6 +13,7 @@ use crate::cli::states::State;
 enum MainMenuAction {
     TransferMoney(&'static str),
     TransferHistory(&'static str),
+    Settings(&'static str),
     Exit(&'static str),
 }
 
@@ -27,10 +28,11 @@ impl MainMenuAction {
     //     DIRECTIONS.iter()
     // }
 
-    pub fn iter() -> impl Iterator<Item =MainMenuAction> {
+    pub fn iter() -> impl Iterator<Item = MainMenuAction> {
         [
             MainMenuAction::TransferMoney("Transfer money"),
             MainMenuAction::TransferHistory("View transfer history"),
+            MainMenuAction::Settings("Settings"),
             MainMenuAction::Exit("Exit"),
         ].iter().copied()
     }
@@ -49,18 +51,19 @@ impl MainMenuAction {
         match self {
             MainMenuAction::TransferMoney(msg) => String::from(*msg),
             MainMenuAction::TransferHistory(msg) => String::from(*msg),
+            MainMenuAction::Settings(msg) => String::from(*msg),
             MainMenuAction::Exit(msg) => String::from(*msg),
         }
     }
 }
 
 
-pub struct MainMenuCLI {
+pub struct MainMenu {
     menu: String,
 }
 
 
-impl MainMenuCLI {
+impl MainMenu {
     fn generate_menu() -> String {
         let mut result: String = String::new();
 
@@ -71,8 +74,8 @@ impl MainMenuCLI {
         result + "~$ "
     }
 
-    pub fn new() -> MainMenuCLI {
-        MainMenuCLI {
+    pub fn new() -> MainMenu {
+        MainMenu {
             menu: Self::generate_menu(),
         }
     }
@@ -89,6 +92,7 @@ impl MainMenuCLI {
         Ok(match action {
             MainMenuAction::TransferMoney(_) => State::TransferMenu,
             MainMenuAction::TransferHistory(_) => State::TransferHistoryMenu,
+            MainMenuAction::Settings(_) => State::SettingsMenu,
             MainMenuAction::Exit(_) => exit(0),
         })
     }

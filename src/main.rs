@@ -23,7 +23,7 @@ fn main() {
 
 fn main_cli_loop() -> Result<()> {
     let mut cli: CLI = CLI::new()?;
-    
+
     loop {
         cli.show_menu()?;
         cli.process_action()?;

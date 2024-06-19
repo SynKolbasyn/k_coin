@@ -5,6 +5,7 @@ use chrono::{DateTime, Utc};
 use serde::{Serialize, Deserialize};
 use anyhow::Result;
 use rand::random;
+use rayon::prelude::*;
 
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -68,7 +69,7 @@ impl Block {
     }
 
     fn check_proof_of_work(&self, proof_of_work: u128) -> Result<bool> {
-        Ok(self.get_bin_hash(proof_of_work)?.starts_with("0000000000000000"))
+        Ok(self.get_bin_hash(proof_of_work)?.starts_with("0000000000000000000000"))
     }
 
     pub fn check(&self) -> Result<bool> {
@@ -99,20 +100,32 @@ impl Block {
         };
     }
 
-    pub fn verify<T: ToString>(&mut self, miner: T) -> Result<()> {
+    pub fn verify_on_one_cpu<T: ToString>(&mut self, miner: T) -> Result<()> {
         // TODO: Rewrite the selection to a graphics accelerator
-        
+
         let mut result: u128 = random::<u128>();
 
         self.miner = miner.to_string();
-    
+
         while !self.check_proof_of_work(result)? {
             result = random::<u128>();
         }
-    
+
         self.proof_of_work = Some(result);
         self.created_time = Some(Utc::now());
-    
+
+        Ok(())
+    }
+
+    pub fn verify_on_all_cpus<T: ToString>(&mut self, miner: T) -> Result<()> {
+
+        self.miner = miner.to_string();
+
+        let result: u128 = (u128::MIN..=u128::MAX).into_par_iter().find_any(|i| { self.check_proof_of_work(*i).unwrap() }).unwrap();
+
+        self.proof_of_work = Some(result);
+        self.created_time = Some(Utc::now());
+
         Ok(())
     }
 
