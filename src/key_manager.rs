@@ -49,7 +49,7 @@ impl KeyManager {
             signing_key,
             verifying_key,
         };
-        
+
         if !Self::get_path()?.exists() {
             result.save_keys()?;
         }

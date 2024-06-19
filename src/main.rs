@@ -4,13 +4,25 @@ mod block;
 mod blockchain;
 
 
+use std::process::exit;
+
 use anyhow::Result;
 
 use crate::cli::CLI;
 
 
-fn main() -> Result<()> {
-    let cli: CLI = CLI::new()?;
+fn main() {
+    loop {
+        match main_cli_loop() {
+            Ok(_) => exit(0),
+            Err(e) => eprintln!("CRITICAL ERROR: {e}"),
+        }
+    }
+}
+
+
+fn main_cli_loop() -> Result<()> {
+    let mut cli: CLI = CLI::new()?;
     
     loop {
         cli.show_menu()?;
