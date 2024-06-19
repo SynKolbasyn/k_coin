@@ -1,59 +1,8 @@
 use std::{
     // slice::Iter,
-    io::{stdin, stdout, Write},
+    io::{stdout, Write},
     process::exit,
 };
-
-use anyhow::Result;
-
-use crate::key_manager::KeyManager;
-use crate::blockchain::Blockchain;
-
-
-enum State {
-    MainMenu,
-}
-
-
-pub struct CLI {
-    state: State,
-    key_manager: KeyManager,
-    main_menu_cli: MainMenuCLI,
-}
-
-
-impl CLI {
-    pub fn new() -> Result<CLI> {
-        Ok(CLI {
-            state: State::MainMenu,
-            key_manager: KeyManager::new()?,
-            main_menu_cli: MainMenuCLI::new(),
-        })
-    }
-
-    pub fn show_menu(&self) -> Result<()> {
-        match self.state {
-            State::MainMenu => self.main_menu_cli.show_menu()?,
-        }
-
-        Ok(())
-    }
-
-    pub fn process_action(&self) -> Result<()> {
-        let mut action: String = String::new();
-        stdin().read_line(&mut action)?;
-
-        match self.state {
-            State::MainMenu => self.main_menu_cli.process_action(action.trim().to_string())?,
-        }
-
-        Ok(())
-    }
-}
-
-
-/// Main menu cli
-
 
 #[derive(Debug, Copy, Clone)]
 enum MainMenuActions {
@@ -80,17 +29,17 @@ impl MainMenuActions {
             MainMenuActions::Exit("Exit"),
         ].iter().copied()
     }
-    
+
     pub fn vec() -> Vec<MainMenuActions> {
         let mut result: Vec<MainMenuActions> = Vec::new();
-        
+
         for i in Self::iter() {
             result.push(i.clone());
         }
-        
+
         result
     }
-    
+
     pub fn get_value(&self) -> String {
         match self {
             MainMenuActions::TransferMoney(msg) => String::from(*msg),
@@ -101,7 +50,7 @@ impl MainMenuActions {
 }
 
 
-struct MainMenuCLI {
+pub struct MainMenuCLI {
     menu: String,
 }
 
@@ -123,21 +72,21 @@ impl MainMenuCLI {
         }
     }
 
-    pub fn show_menu(&self) -> Result<()> {
+    pub fn show_menu(&self) -> anyhow::Result<()> {
         print!("{}", self.menu);
         stdout().flush()?;
         Ok(())
     }
 
-    pub fn process_action(&self, action: String) -> Result<()> {
+    pub fn process_action(&self, action: String) -> anyhow::Result<()> {
         let action: MainMenuActions = MainMenuActions::vec()[action.parse::<usize>()? - 1];
-        
+
         match action {
             MainMenuActions::TransferMoney(_) => (),
             MainMenuActions::IncomingMessages(_) => (),
             MainMenuActions::Exit(_) => exit(0),
         }
-        
+
         Ok(())
     }
 }
